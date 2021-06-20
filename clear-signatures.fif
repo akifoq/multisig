@@ -1,0 +1,31 @@
+#!/usr/bin/fift -s
+"TonUtil.fif" include
+"GetOpt.fif" include
+"utils.fif" include
+
+{ show-options-help 1 halt } : usage
+
+"order" =: savefile
+
+begin-options
+    "<loafile> [-o<savefile>]" +cr +tab
+      +"Clears signatures list of the order"
+    disable-digit-options generic-help-setopt
+    "o" "--output" { =: savefile } short-long-option-arg
+      "Save result into specified file" option-help
+    "h" "--help" { usage } short-long-option
+      "Shows a help message" option-help
+parse-options
+
+$# 1 <> ' usage if
+
+$1 +".boc" file>B B>boc load-signatures drop
+<s constant order
+
+<b
+   0 1 i, order s,
+b>
+
+2 boc+>B
+savefile +".boc" tuck B>file
+."(Saved to file " type .")" cr
