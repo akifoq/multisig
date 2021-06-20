@@ -149,7 +149,7 @@ _ unpack_owner_info(slice cs) inline_ref {
     throw_if(39, flood > 10);
   }
 
-  var bound = 0; ;; (now() << 32);
+  var bound = (now() << 32);
   throw_if(33, query_id < bound);
 
   (int creator_i, int cnt, int cnt_bits, slice msg) = unpack_query_data(in_msg, n, query, found?, root_i);
