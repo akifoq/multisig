@@ -20,6 +20,7 @@ PROGRAM{
   120004 DECLMETHOD get_public_keys
   87157 DECLMETHOD check_query_signatures
   109260 DECLMETHOD messages_by_mask
+  124981 DECLMETHOD get_messages_signed_by_id
   85042 DECLMETHOD get_messages_unsigned_by_id
   120055 DECLMETHOD get_messages_unsigned
   114740 DECLMETHOD get_n_k
@@ -535,63 +536,74 @@ PROGRAM{
     SWAP	//  _38 mask
   }>
   messages_by_mask PROC:<{
-    //  mask
-    unpack_state INLINECALLDICT	//  mask _32 _33 _34 _35 _36 _37
+    //  mask inv
+    unpack_state INLINECALLDICT	//  mask inv _34 _35 _36 _37 _38 _39
     s5 POP
-    3 BLKDROP	//  mask pending_queries n
-    -1 PUSHINT	//  mask pending_queries n i=-1
-    NEWDICT	//  mask pending_queries n i=-1 a
+    3 BLKDROP	//  mask inv pending_queries n
+    -1 PUSHINT	//  mask inv pending_queries n i=-1
+    NEWDICT	//  mask inv pending_queries n i=-1 a
     UNTIL:<{
       s1 s3 XCPU
-      64 PUSHINT	//  mask pending_queries n a i pending_queries _14=64
+      64 PUSHINT	//  mask inv pending_queries n a i pending_queries _15=64
       DICTUGETNEXT
-      NULLSWAPIFNOT2	//  mask pending_queries n a cs i f
-      DUP	//  mask pending_queries n a cs i f f
-      IF:<{	//  mask pending_queries n a cs i f
-        s0 s2 XCHG	//  mask pending_queries n a f i cs
-        1 LDI	//  mask pending_queries n a f i _16 cs
-        SWAP	//  mask pending_queries n a f i cs _16
-        IF:<{	//  mask pending_queries n a f i cs
+      NULLSWAPIFNOT2	//  mask inv pending_queries n a cs i f
+      DUP	//  mask inv pending_queries n a cs i f f
+      IF:<{	//  mask inv pending_queries n a cs i f
+        s0 s2 XCHG	//  mask inv pending_queries n a f i cs
+        1 LDI	//  mask inv pending_queries n a f i _17 cs
+        SWAP	//  mask inv pending_queries n a f i cs _17
+        IF:<{	//  mask inv pending_queries n a f i cs
           DUP
-          16 PUSHINT	//  mask pending_queries n a f i cs cs _22
-          SDSKIPFIRST	//  mask pending_queries n a f i cs _23
-          s5 PUSH	//  mask pending_queries n a f i cs _23 n
-          PLDUX	//  mask pending_queries n a f i cs cnt_bits
-          s7 PUSH	//  mask pending_queries n a f i cs cnt_bits mask
-          AND	//  mask pending_queries n a f i cs _25
-          IF:<{	//  mask pending_queries n a f i cs
-            NEWC	//  mask pending_queries n a f i cs _27
-            SWAP	//  mask pending_queries n a f i _27 cs
-            STSLICER	//  mask pending_queries n a f i _28
+          16 PUSHINT	//  mask inv pending_queries n a f i cs cs _23
+          SDSKIPFIRST	//  mask inv pending_queries n a f i cs _24
+          s5 PUSH	//  mask inv pending_queries n a f i cs _24 n
+          PLDUX	//  mask inv pending_queries n a f i cs _25
+          s7 PUSH	//  mask inv pending_queries n a f i cs _25 inv
+          XOR	//  mask inv pending_queries n a f i cs cnt_bits
+          s8 PUSH	//  mask inv pending_queries n a f i cs cnt_bits mask
+          AND	//  mask inv pending_queries n a f i cs _27
+          IF:<{	//  mask inv pending_queries n a f i cs
+            NEWC	//  mask inv pending_queries n a f i cs _29
+            SWAP	//  mask inv pending_queries n a f i _29 cs
+            STSLICER	//  mask inv pending_queries n a f i _30
             s0 s0 s3 XCPUXC
-            64 PUSHINT	//  mask pending_queries n i f _28 i a _29=64
-            DICTUSETB	//  mask pending_queries n i f a
-            s0 s2 XCHG	//  mask pending_queries n a f i
+            64 PUSHINT	//  mask inv pending_queries n i f _30 i a _31=64
+            DICTUSETB	//  mask inv pending_queries n i f a
+            s0 s2 XCHG	//  mask inv pending_queries n a f i
           }>ELSE<{
-            DROP	//  mask pending_queries n a f i
+            DROP	//  mask inv pending_queries n a f i
           }>
         }>ELSE<{
-          DROP	//  mask pending_queries n a f i
+          DROP	//  mask inv pending_queries n a f i
         }>
       }>ELSE<{
-        s2 POP	//  mask pending_queries n a f i
+        s2 POP	//  mask inv pending_queries n a f i
       }>
-      SWAP	//  mask pending_queries n a i f
-      NOT	//  mask pending_queries n a i _31
-      s1 s2 XCHG	//  mask pending_queries n i a _31
-    }>	//  mask pending_queries n i a
-    4 1 BLKDROP2	//  a
+      SWAP	//  mask inv pending_queries n a i f
+      NOT	//  mask inv pending_queries n a i _33
+      s1 s2 XCHG	//  mask inv pending_queries n i a _33
+    }>	//  mask inv pending_queries n i a
+    5 1 BLKDROP2	//  a
+  }>
+  get_messages_signed_by_id PROC:<{
+    //  id
+    POW2	//  _2
+    0 PUSHINT	//  _2 _3=0
+    messages_by_mask CALLDICT	//  _4
   }>
   get_messages_unsigned_by_id PROC:<{
     //  id
     POW2	//  _2
-    messages_by_mask CALLDICT	//  _3
+    0 PUSHINT	//  _2 _3=0
+    NOT	//  _2 _4
+    messages_by_mask CALLDICT	//  _5
   }>
   get_messages_unsigned PROC:<{
     // 
     0 PUSHINT	//  _0=0
     NOT	//  _1
-    messages_by_mask CALLDICT	//  _2
+    0 PUSHINT	//  _1 _2=0
+    messages_by_mask CALLDICT	//  _3
   }>
   get_n_k PROC:<{
     // 
