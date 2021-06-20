@@ -2,6 +2,9 @@
 
 Interaction scripts for original multisig contract [(cf.)](https://github.com/newton-blockchain/ton/tree/master/crypto/smartcont).
 
+## Compilation
+Compile the contract with `func -SPA stdlib.fc multisig-code.fc -o multisig-code.fif`.
+
 ## Scripts
 Suppose you have set FIFTPATH variabale to fift library directory. Then you can run the scripts with command `fift -s <script-name> <args>`.
 
