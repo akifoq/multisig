@@ -1,0 +1,50 @@
+#!/usr/bin/fift -s
+"TonUtil.fif" include
+"GetOpt.fif" include
+"utils.fif" include
+
+{ show-options-help 1 halt } : usage
+
+"order" =: loadfile
+
+begin-options
+    "<filename-base> <pk-filename-base> <pk-index> [-i<loadfile>] [-o<savefile>]" +cr +tab
+      +"Wrap the order loaded from <loadfile>.boc (" loadfile $+ +".boc by default)"
+      +" to external message to wallet with address loaded from <filename-base>.addr"
+      +" and using private key loaded from <pk-filename-base>.pk for root signature. "
+      +"Saves the result into <savefile>.boc (<filename-base>-query.boc by default)"
+    disable-digit-options generic-help-setopt
+    "i" "--input" { =: loadfile } short-long-option-arg
+      "Load order from specified file" option-help
+    "o" "--output" { =: savefile } short-long-option-arg
+      "Save result into specified file" option-help
+    "h" "--help" { usage } short-long-option
+      "Shows a help message" option-help
+parse-options
+
+$# 3 <> ' usage if
+$1 +".addr" load-address 2constant wallet-addr
+$2 +".pk" load-keypair nip constant wallet-pk
+$3 parse-int constant pk-index
+
+def? savefile { $1 +"-query.boc" =: savefile } ifnot
+
+pk-index 8 ufits { ."pk-index must be unsigned 8-bit integer" cr 1 halt } ifnot
+
+."Multisig wallet address = " wallet-addr .addr cr
+
+loadfile +".boc" file>B B>boc
+load-signatures { second pk-index <> } list-filter
+serialize-signatures swap <s s,
+<b pk-index 8 u, swap b+ b> dup
+<b swap hashB wallet-pk ed25519_sign B,
+   swap <s s,
+b> constant body
+
+<b b{1000100} s, wallet-addr addr, b{00000} s,
+	body <s 2dup s-fits? not rot over 1 i, -rot { drop body ref, } { s, } cond
+b>
+
+2 boc+>B
+savefile tuck B>file
+."(Saved to file " type .")" cr

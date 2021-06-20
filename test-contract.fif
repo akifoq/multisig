@@ -1,0 +1,40 @@
+#!/usr/bin/env fift -s
+"TonUtil.fif" include
+"Lists.fif" include
+"Stack.fif" include
+
+
+"multisig-code.fif" include constant code
+
+{
+  null swap
+  { dup $len }
+  { 48 $| swap parse-pubkey swap
+  	dup $len { 1 $| nip } if
+    // D pk S
+    -rot swap cons swap
+  } while
+  drop list-reverse
+} : load-pubkeys
+
+"0" parse-workchain-id constant wc
+"2017" parse-int constant wallet-id
+"3" parse-int constant k
+"pubkeys" file>B B>$ load-pubkeys constant pubkeys
+pubkeys list-length constant n
+
+
+dictnew 0 pubkeys {
+  uncons swap <b swap 256 u, 0 8 u,
+  S(D x t v - x t v x D)
+  8 b>udict! drop rot 1+ rot
+} n times 2drop constant owner_infos
+
+<b wallet-id 32 u, n 8 u, k 8 u, 1 64 u,
+   owner_infos dict, dictnew dict, b> constant storage
+
+3 owner_infos 8 udict@ drop 32 B@ constant pubkey
+
+"wallet-query.boc" file>B B>boc <s
+
+-1 code <s storage 10000 gasrunvm

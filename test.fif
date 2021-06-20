@@ -1,0 +1,9 @@
+"utils.fif" include
+
+2 3 9 null cons cons cons constant l1
+9 3 1 null cons cons cons constant l2
+
+l1 l2 ' < list-merge
+list-reverse
+' < list-sort
+' = list-unique dup .l

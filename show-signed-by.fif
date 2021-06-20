@@ -1,0 +1,19 @@
+#!/usr/bin/fift -s
+"TonUtil.fif" include
+"GetOpt.fif" include
+"utils.fif" include
+
+{ show-options-help 1 halt } : usage
+
+begin-options
+    "<order-file>" +cr +tab
+      +"Loads order from <order-file>.boc file and shows indexes of parties that have signed the order"
+    disable-digit-options generic-help-setopt
+    "h" "--help" { usage } short-long-option
+      "Shows a help message" option-help
+parse-options
+
+$# 1 <> ' usage if
+
+$1 +".boc" file>B B>boc load-signatures
+' second list-map .l cr

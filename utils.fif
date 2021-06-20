@@ -1,0 +1,74 @@
+"Lists.fif" include
+"Stack.fif" include
+
+// (a1 ... an t) n -- (a1 ... an) t
+{ null -rot {
+    uncons -rot swap cons swap
+  } swap times
+  swap list-reverse swap
+} : list-split
+
+// l1 l2 e -- l merges 2 sorted lists w.r.t. comparator e
+recursive list-merge {
+  -rot dup null? { drop nip } {
+    over null? { nip nip } {
+      over car over car
+      4 pick execute ' swap if
+      uncons rot 3 roll list-merge cons
+    } cond
+  } cond
+} swap !
+
+// l e -- l' sorts list w.r.t. comparator e
+recursive list-sort {
+  swap dup list-length
+  dup 2 < { drop nip } {
+    2 / list-split
+    2 pick list-sort swap
+    2 pick list-sort rot list-merge
+  } cond
+} swap !
+
+// l e -- l' deletes duplicates in a sorted list with equality operator e
+recursive list-unique {
+  swap dup null? { nip } {
+    uncons 2 pick list-unique
+    dup null? { cons nip } {
+      uncons -rot 2dup 5 roll execute
+      { drop swap cons }
+      { rot cons cons } cond
+    } cond
+  } cond
+} swap !
+
+// l e -- l'
+recursive list-filter {
+  swap dup null? { nip } {
+    uncons 2 pick list-filter
+    -rot dup rot execute
+    { swap cons } { drop } cond
+  } cond
+} swap !
+
+// =====================================================
+
+// c -- c' l
+{ <s dup null swap
+  { dup 1 i@ }
+  { ref@ <s 64 B@+ 8 u@+ -rot pair
+    rot cons swap
+  } while drop
+  swap 1 i@+ swap { ref@+ drop } if s>c swap
+} : load-signatures
+
+// l -- b
+recursive serialize-signatures {
+  <b swap
+  dup null? { drop 0 1 i, } {
+    uncons serialize-signatures -rot swap
+    over first B,
+    swap second 8 u,
+    swap b+ b>
+    <b -1 1 i, swap ref,
+  } cond
+} swap !

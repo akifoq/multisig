@@ -1,0 +1,49 @@
+#!/usr/bin/fift -s
+"TonUtil.fif" include
+"GetOpt.fif" include
+
+{ show-options-help 1 halt } : usage
+
+"order" =: loadfile
+"order" =: savefile
+
+begin-options
+    "<pk-filename-base> <pk-index> [-i<loadfile>] [-o<savefile>]" +cr +tab
+      +"Signs the order loaded from <loadfile>.boc (" loadfile $+ +".boc by default)" +cr +tab
+      +"with private key loaded from <pk-filename-base>.pk, " +cr +tab
+      +"and saves the result into <savefile>.boc (" savefile $+ +".boc by default)"
+    disable-digit-options generic-help-setopt
+    "i" "--input" { =: loadfile } short-long-option-arg
+      "Load order from specified file" option-help
+    "o" "--output" { =: savefile } short-long-option-arg
+      "Save result into specified file" option-help
+    "h" "--help" { usage } short-long-option
+      "Shows a help message" option-help
+parse-options
+
+$# 2 <> ' usage if
+$1 +".pk" load-keypair nip constant wallet-pk
+$2 parse-int constant pk-index
+
+pk-index 8 ufits { ."pk-index must be unsigned 8-bit integer" cr 1 halt } ifnot
+
+null =: sign-list
+loadfile +".boc" file>B B>boc <s dup
+    1 i@+ swap { ref@+ =: sign-list } if dup constant order
+    shash constant order-hash
+{ dup 1 i@ }
+{ ref@ <s 64 B@+ nip 8 u@+ swap
+  pk-index = { ."Your signature is already presented" cr 1 halt } if
+} while drop
+
+<b -1 1 i,
+   <b order-hash wallet-pk ed25519_sign B,
+      pk-index 8 u,
+      sign-list null? not swap over 1 i, swap
+      { sign-list ref, } if
+   b> ref, order s,
+b>
+
+2 boc+>B
+savefile +".boc" tuck B>file
+."(Saved to file " type .")" cr

@@ -1,0 +1,35 @@
+#!/usr/bin/fift -s
+"TonUtil.fif" include
+"GetOpt.fif" include
+"utils.fif" include
+
+{ show-options-help 1 halt } : usage
+
+"order" =: savefile
+
+begin-options
+    "<order1-file> <order2-file> [-o<savefile>]" +cr +tab
+      +"Loads two orders from specified files (with '.boc' suffix added) and unions the signature lists"
+    disable-digit-options generic-help-setopt
+    "o" "--output" { =: savefile } short-long-option-arg
+      "Save result into specified file" option-help
+    "h" "--help" { usage } short-long-option
+      "Shows a help message" option-help
+parse-options
+
+$# 2 <> ' usage if
+
+$1 +".boc" file>B B>boc load-signatures constant l1
+$2 +".boc" file>B B>boc load-signatures constant l2
+over hashu swap hashu = { ."Files contain different orders" cr 1 halt } ifnot
+<s constant order
+
+<b
+   l1 l2 list+ { second swap second < } list-sort
+   { second swap second = } list-unique serialize-signatures
+   b+ order s,
+b>
+
+2 boc+>B
+savefile +".boc" tuck B>file
+."(Saved to file " type .")" cr

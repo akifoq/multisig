@@ -1,0 +1,13 @@
+#!/usr/bin/env fift -s
+"TonUtil.fif" include
+
+{ ."usage: " @' $0 type ." <filename-base>" cr
+  ."Create a new private key and save to <filename-base>.pk " cr
+  ."If <filename-base>.pk already exists -- display public key in user-friendly format" cr 1 halt
+} : usage
+$# 1- -1 and ' usage if
+
+$1 =: file_base
+
+file_base +".pk" load-generate-keypair constant private_key
+."Public key = " dup 256 B>u@ pubkey>$ type cr

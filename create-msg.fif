@@ -1,0 +1,60 @@
+#!/usr/bin/fift -s
+"TonUtil.fif" include
+"GetOpt.fif" include
+
+{ show-options-help 1 halt } : usage
+
+"" =: comment  // comment for simple transfers
+true =: allow-bounce
+false =: force-bounce
+3 =: send-mode  // mode for SENDRAWMSG: +1 - sender pays fees, +2 - ignore errors
+variable extra-currencies
+{ extra-currencies @ cc+ extra-currencies ! } : extra-cc+!
+
+begin-options
+     "<dest-addr> <amount> [-x <extra-amount>*<extra-currency-id>] [-n|-b] [-B <body-boc>] [-C <comment>] [<savefile>]" +cr +tab
+    +"Creates an internal message with specified params, which can be added to an order under construction, "
+    +"and saves it into <savefile>.boc ('msg.boc' by default)"
+    disable-digit-options generic-help-setopt
+  "n" "--no-bounce" { false =: allow-bounce } short-long-option
+    "Clears bounce flag" option-help
+  "b" "--force-bounce" { true =: force-bounce } short-long-option
+    "Forces bounce flag" option-help
+  "x" "--extra" { $>xcc extra-cc+! } short-long-option-arg
+    "Indicates the amount of extra currencies to be transfered" option-help
+  "B" "--body" { =: body-boc-file } short-long-option-arg
+    "Sets the payload of the transfer message" option-help
+  "C" "--comment" { =: comment } short-long-option-arg
+    "Sets the comment to be sent in the transfer message" option-help
+  "m" "--mode" { parse-int =: send-mode } short-long-option-arg
+    "Sets transfer mode (0..255) for SENDRAWMSG (" send-mode (.) $+ +" by default)"
+    option-help
+  "h" "--help" { usage } short-long-option
+    "Shows a help message" option-help
+parse-options
+
+$# dup 2 < swap 3 > or ' usage if
+3 :$1..n
+
+true constant bounce
+$1 bounce parse-load-address force-bounce or allow-bounce and =: bounce 2=: dest_addr
+$2 $>cc extra-cc+! extra-currencies @ 2=: amount
+$3 "msg" replace-if-null =: savefile
+
+def? body-boc-file { @' body-boc-file file>B B>boc } { comment simple-transfer-body } cond
+constant body-cell
+
+."Transferring " amount .GR+cc ."to account "
+dest_addr 2dup bounce 7 + .Addr ." = " .addr cr
+."bounce = " bounce . cr
+."mode = " send-mode x. cr
+."Body of transfer message is " body-cell <s csr. cr
+
+<b b{01} s, bounce 1 i, b{000} s, dest_addr Addr, amount Gram+cc, 0 9 64 32 + + u,
+  body-cell <s 2dup 1 s-fits-with? not rot over 1 i, -rot { drop body-cell ref, } { s, } cond
+b> constant transfer-message
+
+<b send-mode 8 u, transfer-message ref, b>
+2 boc+>B
+savefile +".boc" tuck B>file
+."(Saved to file " type .")" cr

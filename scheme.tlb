@@ -1,0 +1,18 @@
+storage#_ wallet_id:(## 32) n:(## 8) k:(## 8) last_cleaned:(## 64)
+          owner_infos:(HashmapE 8 OwnerInfo) pending_queries:(HashmapE 64 (QueryDataE n))
+          = Storage;
+
+ownerInfo#_ public_key:uint256 flood:(## 8) = OwnerInfo;
+
+queryData#_ {n:#} creator_i:(## 8) cnt:(## 8) cnt_bits:(n * Bit) toSend:MsgInfos = QueryData n;
+_ Maybe (QueryData n) = QueryDataE n;
+
+empty#_ = MsgInfo ~0;
+info#_ mode:(## 8) msg:^(Message Any) rest:MsgInfos = MsgInfo ~1;
+_ {e:#} MsgInfo ~e = MsgInfos;
+
+extMsgBody#_ root_signature:bits512 root_i:(## 8)
+             signatures:(Maybe ^SignatureList) query_wallet_id:(## 32)
+             query_id:uint64 toSend:MsgInfos = ExtMessageBody;
+
+sigList#_ signature:bits512 i:(## 8) next:(Maybe ^SignatureList) = SignatureList;
