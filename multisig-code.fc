@@ -63,6 +63,7 @@ _ unpack_owner_info(slice cs) inline_ref {
     throw_unless(36, slice_hash(msg) == slice_hash(in_msg));
     return (creator_i, cnt, cnt_bits, msg);
   }
+  throw_unless(43, slice_refs(in_msg) * 8 == slice_bits(in_msg));
   return (root_i, 0, 0, in_msg);
 }
 
