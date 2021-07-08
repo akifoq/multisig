@@ -52,6 +52,18 @@ recursive list-filter {
 
 // =====================================================
 
+// s -- wc addr s'
+{ 1 i@+ swap not abort"Internal address expected"
+  1 i@+
+  1 i@+ swap { 4 u@+ swap u@+ nip } if
+  swap { 9 u@+ 32 } { 256 swap 8 } cond 
+  u@+ rot u@+
+} : addr@+
+{ addr@+ drop } : addr@
+
+
+// =====================================================
+
 // c -- c' l
 { <s dup null swap
   { dup 1 i@ }
