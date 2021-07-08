@@ -57,7 +57,7 @@ recursive list-filter {
   1 i@+
   1 i@+ swap { 4 u@+ swap u@+ nip } if
   swap { 9 u@+ 32 } { 256 swap 8 } cond 
-  u@+ rot u@+
+  i@+ rot u@+
 } : addr@+
 { addr@+ drop } : addr@
 
