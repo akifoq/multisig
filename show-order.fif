@@ -20,24 +20,25 @@ load-signatures constant signatures <s
 ."signed by: " signatures ' second list-map .l cr
 ."Messages: " cr
 { dup sbits } {
-  8 u@+ dup rot swap ref@ <s // send-mode
+  8 u@+ swap =: send-mode
+  dup ref@ <s 
   1 i@+ swap { ."not an internal message" cr 1 halt } if
-  1 i@+ // ihr-disabled
-  1 i@+ // bounce
+  1 i@+ swap =: ihr-disabled
+  1 i@+ swap =: bounce
   1 i@+ nip
   2 u@+ swap 0 <> { ."src = none expected" cr 1 halt } if
-  addr@+ // wc addr
-  Gram@+ // value
-  1 i@+ swap { ref@+ } { null swap } cond // extra
+  addr@+ -rot 2=: dest
+  Gram@+ swap =: value
+  1 i@+ swap { ref@+ swap } { null } cond =: extra
   Gram@+ nip Gram@+ nip
   64 u@+ nip 32 u@+ nip
   1 i@+ swap { ."StateInit displaying is not supported" cr 1 halt } if
-  1 i@+ swap { ref@ <s } if // body
+  1 i@+ swap { ref@ <s } if =: body
 
-  ."  Transferring " -rot .GR+cc ."to account "
-  3 -roll 2dup 4 pick 5 + .Addr ." = " .addr cr
-  rot ."  ihr-disabled = "  . cr
-  ."  bounce = " . cr
-  swap ."  mode = " x. cr
-  ."  Body of the message is " csr. cr
+  ."  Transferring " @' value @' extra .GR+cc ."to account "
+  @' dest 2dup @' bounce 5 + .Addr ." = " .addr cr
+  ."  ihr-disabled = " @' ihr-disabled . cr
+  ."  bounce = " @' bounce . cr
+  ."  mode = " @' send-mode x. cr
+  ."  Body of the message is " @' body csr. cr
 } while
