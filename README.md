@@ -1,6 +1,9 @@
 # TON blockchain multisig contract 
 
-Interaction scripts for original multisig contract [(cf.)](https://github.com/newton-blockchain/ton/tree/master/crypto/smartcont).
+Interaction scripts for [original multisig contract](https://github.com/newton-blockchain/ton/blob/master/crypto/smartcont/multisig-code.fc).
+
+## Modifications made to FunC code
+Please note that I have [fixed](https://github.com/akifoq/multisig/commit/b5ecf321ffc175c0a29662f2b0134a14d781dd19) a minor bug in a get-method (doesn't affect onchain behaviour) and also [added](https://github.com/akifoq/multisig/commit/cf43cebc88254cb02c8480b0dff9eca431febc4d) additional check for proposed query to prevent infinite repeating of correctly signed by majority of holders, but otherwise incorrect (due to a bug in offchain interface, for instance) order, which could lead to loosing unlimited amount of funds to blockchain fees. Except for this, the code is the same.
 
 ## Compilation
 Compile the contract with `func -SPA stdlib.fc multisig-code.fc -o multisig-code.fif`.
