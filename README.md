@@ -5,6 +5,12 @@ Interaction scripts for [original multisig contract](https://github.com/newton-b
 ## Modifications made to FunC code
 Please note that I have [fixed](https://github.com/akifoq/multisig/commit/b5ecf321ffc175c0a29662f2b0134a14d781dd19) a minor bug in a get-method (doesn't affect onchain behaviour) and also [added](https://github.com/akifoq/multisig/commit/cf43cebc88254cb02c8480b0dff9eca431febc4d) additional check for proposed query to prevent infinite repeating of correctly signed by majority of holders, but otherwise incorrect (due to a bug in offchain interface, for instance) order, which could lead to loosing unlimited amount of funds to blockchain fees. Except for this, the code is the same.
 
+## Brief description of multisig wallet
+`(n, k)`-multisig wallet is a multisignature wallet with `n` private keys holders, which accepts requests to send messages if the request (aka order, query) collects at least `k` signatures of the holders. An order can have up to three unique messages to send in a single transaction. In contrast to some other blockchains, a holder doesn't need to have own wallet. It is possible to control the multisig using only the keys, while the fee is paid from multisig's own funds. Also multisig supports onchain voting for orders. Namely, if an order sent to multisig has at least one correct signature but less than `k`, then it is saved to contract data to allow collecting missing signatures later. Also any order may have a time limit, after which it is expired. 
+
+### Risks using multisig wallet
+Please note that it is not recommended to have more than ~100 non-expired orders simultaneously, because it can lead to out of gas credit exception. An order is considered non-expired from the moment it transefered to the contract to the expiration time (such orders' ids are saved in the contract data to enforce reply-protection).
+
 ## Compilation
 Compile the contract with `func -SPA stdlib.fc multisig-code.fc -o multisig-code.fif`.
 
