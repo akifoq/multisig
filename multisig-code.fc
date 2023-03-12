@@ -28,7 +28,7 @@ _ unpack_owner_info(slice cs) inline_ref {
   return (cs~load_uint(256), cs~load_uint(8));
 }
 
-(int, int) check_signatures(cell public_keys, cell signatures, int hash, int cnt_bits) inline_ref {
+(int, int) check_signatures(cell public_keys, cell signatures, int hash, int cnt_bits) impure inline_ref {
   int cnt = 0;
 
   do {
@@ -56,7 +56,7 @@ _ unpack_owner_info(slice cs) inline_ref {
   ;; do nothing for internal messages
 }
 
-(int, int, int, slice) unpack_query_data(slice in_msg, int n, slice query, var found?, int root_i) inline_ref {
+(int, int, int, slice) unpack_query_data(slice in_msg, int n, slice query, var found?, int root_i) impure inline_ref {
   if (found?) {
     throw_unless(35, query~load_int(1));
     (int creator_i, int cnt, int cnt_bits, slice msg) = (query~load_uint(8), query~load_uint(8), query~load_uint(n), query);
@@ -140,8 +140,8 @@ _ unpack_owner_info(slice cs) inline_ref {
 
   int query_id = in_msg~load_uint(64);
 
-  (int cnt, int bits) = calc_boc_size(0, 0, in_msg);
-  throw_if(40, (cnt > 8) | (bits > 2048));
+  (int msg_cnt, int msg_bits) = calc_boc_size(0, 0, in_msg);
+  throw_if(40, (msg_cnt > 8) | (msg_bits > 2048));
 
   (slice query, var found?) = pending_queries.udict_get?(64, query_id);
 
@@ -153,7 +153,7 @@ _ unpack_owner_info(slice cs) inline_ref {
   var bound = (now() << 32);
   throw_if(33, query_id < bound);
 
-  (int creator_i, int cnt, int cnt_bits, slice msg) = unpack_query_data(in_msg, n, query, found?, root_i); ;; todo (cosmetic): variable cnt is redeclared
+  (int creator_i, int cnt, int cnt_bits, slice msg) = unpack_query_data(in_msg, n, query, found?, root_i);
   int mask = 1 << root_i;
   throw_if(34, cnt_bits & mask);
   cnt_bits |= mask;
