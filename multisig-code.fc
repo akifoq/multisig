@@ -46,7 +46,7 @@ _ unpack_owner_info(slice cs) inline_ref {
     int old_cnt_bits = cnt_bits;
     cnt_bits |= mask;
     int should_check = cnt_bits != old_cnt_bits;
-    cnt -= should_check;
+    cnt -= should_check; ;; TODO: code can be simplified
   } until (cell_null?(signatures));
 
   return (cnt, cnt_bits);
@@ -93,7 +93,7 @@ _ unpack_owner_info(slice cs) inline_ref {
     owner_infos~dec_flood(creator_i);
   } else {
     pending_queries~udict_set_builder(64, query_id, begin_cell()
-      .store_uint(1, 1)
+      .store_uint(1, 1) ;; TODO (cosmetic): active_flag is stored in different ways, need to use `store_int`
       .store_uint(creator_i, 8)
       .store_uint(cnt, 8)
       .store_uint(cnt_bits, n)
@@ -125,7 +125,7 @@ _ unpack_owner_info(slice cs) inline_ref {
   int root_i = in_msg~load_uint(8);
 
   (int wallet_id, int n, int k, int last_cleaned, cell owner_infos, cell pending_queries) = unpack_state();
-  last_cleaned -= last_cleaned == 0;
+  last_cleaned -= last_cleaned == 0; ;; TODO: code can be simplified
 
   (slice owner_info, var found?) = owner_infos.udict_get?(8, root_i);
   throw_unless(31, found?);
